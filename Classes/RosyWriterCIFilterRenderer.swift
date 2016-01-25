@@ -107,8 +107,37 @@ class RosyWriterCIFilterRenderer: NSObject, RosyWriterRenderer {
         
         let sourceImage = CIImage(CVPixelBuffer: pixelBuffer, options: nil)
         
-        _rosyFilter.setValue(sourceImage, forKey: kCIInputImageKey)
-        let filteredImage = _rosyFilter.valueForKey(kCIOutputImageKey) as! CIImage?
+        //==== Charence ====
+        let timestamp = NSDate().timeIntervalSince1970
+        let data = "timestamp:\(timestamp)".dataUsingEncoding(NSISOLatin1StringEncoding, allowLossyConversion: false)
+        
+        let filter = CIFilter(name: "CIQRCodeGenerator")
+        
+        filter?.setValue(data, forKey: "inputMessage")
+        filter?.setValue("Q", forKey: "inputCorrectionLevel")
+
+        let qrcodeImage = filter?.outputImage
+        
+        //let scaleX = sourceImage.extent.size.width / qrcodeImage!.extent.size.width
+        //let scaleY = sourceImage.extent.size.width / qrcodeImage!.extent.size.height
+        
+        let scaleX = 200 / qrcodeImage!.extent.size.width
+        let scaleY = 200 / qrcodeImage!.extent.size.height
+        
+        let transformedImage = qrcodeImage!.imageByApplyingTransform(CGAffineTransformMakeScale(scaleX, scaleY))
+        
+        // Create overlay filter
+        let overlayFilter = CIFilter(name: "CIOverlayQRCode")
+        overlayFilter?.setValue(transformedImage, forKey: "inputImage")
+        overlayFilter?.setValue(sourceImage, forKey: "inputBackgroundImage")
+        
+        // Get output
+        let filteredImage = transformedImage as! CIImage? //overlayFilter?.outputImage as! CIImage?
+
+        //_rosyFilter.setValue(sourceImage, forKey: kCIInputImageKey)
+        //let filteredImage = _rosyFilter.valueForKey(kCIOutputImageKey) as! CIImage?
+        
+        //==== Charence END ====
         
         let err = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, _bufferPool, &renderedOutputPixelBuffer)
         if err != 0 {
