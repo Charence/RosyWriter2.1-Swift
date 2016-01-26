@@ -127,12 +127,14 @@ class RosyWriterCIFilterRenderer: NSObject, RosyWriterRenderer {
         let transformedImage = qrcodeImage!.imageByApplyingTransform(CGAffineTransformMakeScale(scaleX, scaleY))
         
         // Create overlay filter
-        let overlayFilter = CIFilter(name: "CIOverlayQRCode")
+        //let overlayFilter = CISourceOverCompositing(name: "CIOverlayQRCode")
+        let overlayFilter = CIFilter(name: "CISourceOverCompositing")
         overlayFilter?.setValue(transformedImage, forKey: "inputImage")
         overlayFilter?.setValue(sourceImage, forKey: "inputBackgroundImage")
         
         // Get output
-        let filteredImage = transformedImage as! CIImage? //overlayFilter?.outputImage as! CIImage?
+        //let filteredImage = transformedImage as! CIImage? //overlayFilter?.outputImage as! CIImage?
+        let filteredImage = overlayFilter?.outputImage as! CIImage?
 
         //_rosyFilter.setValue(sourceImage, forKey: kCIInputImageKey)
         //let filteredImage = _rosyFilter.valueForKey(kCIOutputImageKey) as! CIImage?
